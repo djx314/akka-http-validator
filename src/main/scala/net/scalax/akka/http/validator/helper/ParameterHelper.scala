@@ -78,8 +78,13 @@ object ParameterModel {
 
 trait ParameterHelper {
 
-  def param[T](name: String)(implicit fsu: FromStringUnmarshaller[T]): ParameterModel.DValidated[T] = {
+  def parameter[T](name: String)(implicit fsu: FromStringUnmarshaller[T]): ParameterModel.DValidated[T] = {
     val d1 = akka.http.scaladsl.server.Directives.parameter(ParamMagnet(name.as[T])(ParamDef.forNR(fsu)))
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
+  def parameterOpt[T](name: String)(implicit fsu: ParamDef.FSOU[T]): ParameterModel.DValidated[Option[T]] = {
+    val d1 = akka.http.scaladsl.server.Directives.parameter(ParamMagnet(name.as[T].?)(ParamDef.forNOR(fsu)))
     ParameterModel.dValidatedExtend(name, d1)
   }
 
@@ -88,8 +93,13 @@ trait ParameterHelper {
     ParameterModel.dValidatedExtend(name, d1)
   }
 
+  def formFieldOpt[T](name: String)(implicit fsu: FieldDef.FSFFOU[T]): ParameterModel.DValidated[Option[T]] = {
+    val d1 = akka.http.scaladsl.server.Directives.formField(FieldMagnet(name.as[T].?)(FieldDef.forNOR(fsu)))
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
   def param(name: String): ParameterModel.ParameterPlaceHolder = ParameterModel.ParameterPlaceHolder(name)
-  def formField(name: String): ParameterModel.FormFieldPlaceHolder = ParameterModel.FormFieldPlaceHolder(name)
+  def form(name: String): ParameterModel.FormFieldPlaceHolder = ParameterModel.FormFieldPlaceHolder(name)
 
 }
 

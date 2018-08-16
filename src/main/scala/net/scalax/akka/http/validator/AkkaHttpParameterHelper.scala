@@ -1,6 +1,8 @@
 package net.scalax.akka.http.validator
 
 import akka.http.scaladsl.server._
+import akka.http.scaladsl.server.directives.FormFieldDirectives.FieldDef
+import akka.http.scaladsl.server.directives.ParameterDirectives.ParamDef
 import akka.http.scaladsl.unmarshalling._
 import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ DecoderShape, ErrorMessage }
@@ -32,7 +34,7 @@ trait AkkaHttpParameterHelper extends HListDecoderImplicit {
 
   implicit def akkahttpParameterShapeImplicit[T](implicit fsu: FromStringUnmarshaller[T]): DecoderShape.Aux[ParameterModel.ParameterPlaceHolder, T, ParameterModel.DValidated[T]] = new DecoderShape[ParameterModel.ParameterPlaceHolder, T] {
     override type Target = ParameterModel.DValidated[T]
-    override def wrapRep(baseRep: ParameterModel.ParameterPlaceHolder): ParameterModel.DValidated[T] = helper.param[T](baseRep.name)(fsu)
+    override def wrapRep(baseRep: ParameterModel.ParameterPlaceHolder): ParameterModel.DValidated[T] = helper.parameter[T](baseRep.name)(fsu)
     override def toDirective(targetRep: ParameterModel.DValidated[T]): Directive1[Validated[ErrorMessage, T]] = targetRep.directive
   }
 
@@ -40,6 +42,18 @@ trait AkkaHttpParameterHelper extends HListDecoderImplicit {
     override type Target = ParameterModel.DValidated[T]
     override def wrapRep(baseRep: ParameterModel.FormFieldPlaceHolder): ParameterModel.DValidated[T] = helper.formField[T](baseRep.name)(fsu)
     override def toDirective(targetRep: ParameterModel.DValidated[T]): Directive1[Validated[ErrorMessage, T]] = targetRep.directive
+  }
+
+  implicit def akkahttpOptionParameterShapeImplicit[T](implicit fsu: ParamDef.FSOU[T]): DecoderShape.Aux[ParameterModel.ParameterPlaceHolder, Option[T], ParameterModel.DValidated[Option[T]]] = new DecoderShape[ParameterModel.ParameterPlaceHolder, Option[T]] {
+    override type Target = ParameterModel.DValidated[Option[T]]
+    override def wrapRep(baseRep: ParameterModel.ParameterPlaceHolder): ParameterModel.DValidated[Option[T]] = helper.parameterOpt[T](baseRep.name)(fsu)
+    override def toDirective(targetRep: ParameterModel.DValidated[Option[T]]): Directive1[Validated[ErrorMessage, Option[T]]] = targetRep.directive
+  }
+
+  implicit def akkahttpOptionFormFieldShapeImplicit[T](implicit fsu: FieldDef.FSFFOU[T]): DecoderShape.Aux[ParameterModel.FormFieldPlaceHolder, Option[T], ParameterModel.DValidated[Option[T]]] = new DecoderShape[ParameterModel.FormFieldPlaceHolder, Option[T]] {
+    override type Target = ParameterModel.DValidated[Option[T]]
+    override def wrapRep(baseRep: ParameterModel.FormFieldPlaceHolder): ParameterModel.DValidated[Option[T]] = helper.formFieldOpt[T](baseRep.name)(fsu)
+    override def toDirective(targetRep: ParameterModel.DValidated[Option[T]]): Directive1[Validated[ErrorMessage, Option[T]]] = targetRep.directive
   }
 
 }
