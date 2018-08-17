@@ -90,6 +90,26 @@ trait ParameterHelper {
     ParameterModel.dValidatedExtend(name, d1)
   }
 
+  def simpleParameter(name: String): ParameterModel.DValidated[String] = {
+    val d1 = akka.http.scaladsl.server.Directives.parameter(name)
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
+  def simpleFormField(name: String): ParameterModel.DValidated[String] = {
+    val d1 = akka.http.scaladsl.server.Directives.formField(name)
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
+  def simpleParameterOpt(name: String): ParameterModel.DValidated[Option[String]] = {
+    val d1 = akka.http.scaladsl.server.Directives.parameter(name.as[String].?)
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
+  def simpleFormFieldOpt(name: String): ParameterModel.DValidated[Option[String]] = {
+    val d1 = akka.http.scaladsl.server.Directives.formField(name.as[String].?)
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
   /*def parameter[T](name: String)(implicit fsu: FromStringUnmarshaller[T]): ParameterModel.DValidated[T] = {
     val d1 = akka.http.scaladsl.server.Directives.parameter(ParamMagnet(name.as[T])(ParamDef.forNR(fsu)))
     ParameterModel.dValidatedExtend(name, d1)
