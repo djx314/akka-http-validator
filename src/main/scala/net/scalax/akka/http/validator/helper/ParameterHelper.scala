@@ -77,15 +77,12 @@ object ParameterModel {
 
 trait ParameterHelper {
 
-  type ParamMagnetAux[U] = ParamMagnet { type Out = U }
-  type FieldMagnetAux[U] = FieldMagnet { type Out = U }
-
-  def parameter[T](name: String, pdm: ParamMagnetAux[Directive1[T]]): ParameterModel.DValidated[T] = {
+  def parameter[T](name: String, pdm: ParamMagnet)(implicit cv: pdm.Out <:< Directive1[T]): ParameterModel.DValidated[T] = {
     val d1 = akka.http.scaladsl.server.Directives.parameter(pdm)
     ParameterModel.dValidatedExtend(name, d1)
   }
 
-  def formField[T](name: String, pdm: FieldMagnetAux[Directive1[T]]): ParameterModel.DValidated[T] = {
+  def formField[T](name: String, pdm: FieldMagnet)(implicit cv: pdm.Out <:< Directive1[T]): ParameterModel.DValidated[T] = {
     val d1 = akka.http.scaladsl.server.Directives.formField(pdm)
     ParameterModel.dValidatedExtend(name, d1)
   }

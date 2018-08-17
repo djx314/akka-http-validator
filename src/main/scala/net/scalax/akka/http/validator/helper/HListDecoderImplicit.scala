@@ -22,7 +22,7 @@ trait HListDecoderImplicit {
       Directive.apply { (s: Tuple1[Validated[ErrorMessage, HNil]] => Route) => s(Tuple1(Validated.Valid(HNil))) }
   }
 
-  implicit def hlistDirective1Implicit[A, B, C, D <: HList, E <: HList, F <: HList](head: Lazy[DecoderShape.Aux[A, B, C]], tail: Lazy[DecoderShape.Aux[D, E, F]]): DecoderShape.Aux[A :: D, B :: E, C :: F] = new DecoderShape[A :: D, B :: E] {
+  implicit def hlistDirective1Implicit[A, B, C, D <: HList, E <: HList, F <: HList](implicit head: Lazy[DecoderShape.Aux[A, B, C]], tail: Lazy[DecoderShape.Aux[D, E, F]]): DecoderShape.Aux[A :: D, B :: E, C :: F] = new DecoderShape[A :: D, B :: E] {
     override type Target = C :: F
     override def wrapRep(baseRep: A :: D): C :: F = {
       val a :: d = baseRep

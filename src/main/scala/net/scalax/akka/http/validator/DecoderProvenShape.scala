@@ -4,11 +4,17 @@ import akka.http.scaladsl.server._
 import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ DecoderShape, DecoderShapeValue, ErrorMessage }
 import net.scalax.akka.http.validator.helper.{ CaseClassGen, CommonHelper }
+import shapeless.Generic
 
 trait DecoderProvenShape[Data] {
   self =>
 
-  val fromRep: CaseClassGen[Data] = CaseClassGen[Data]
+  def fromModel[HListData](implicit gen: Generic.Aux[Data, HListData]): CaseClassGen[Data, HListData] = {
+    val gen1 = gen
+    new CaseClassGen[Data, HListData] {
+      override val gen = gen1
+    }
+  }
 
   def sv: DecoderShapeValue[Data]
 

@@ -7,19 +7,12 @@ import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ DecoderShape, DecoderShapeValue, ErrorMessage }
 import shapeless.Generic
 
-trait CaseClassGen[Case] {
+trait CaseClassGen[Case, HListData] {
 
-  def apply[HListData, HListRep](hlist: HListRep)(implicit gen: Generic.Aux[Case, HListData], shape: DecoderShape[HListRep, HListData]): Directive1[Case] = {
+  val gen: Generic.Aux[Case, HListData]
 
-    val d1: Directive1[Validated[ErrorMessage, HListData]] = shape.toDirective(shape.wrapRep(hlist))
+  def shaped[HListRep](hlist: HListRep)(implicit shape: DecoderShape[HListRep, HListData]): DecoderShapeValue[Case] = {
 
-    val d2 = d1.map(r => r.map(gen.from))
-
-    CommonHelper.toResponse(d2)
-
-  }
-
-  def shaped[HListData, HListRep](hlist: HListRep)(implicit gen: Generic.Aux[Case, HListData], shape: DecoderShape[HListRep, HListData]): DecoderShapeValue[Case] = {
     val shape1 = shape
     new DecoderShapeValue[Case] {
       override type Rep = shape1.Target
@@ -37,13 +30,9 @@ trait CaseClassGen[Case] {
 
 }
 
-object CaseClassGen {
-  def apply[Case]: CaseClassGen[Case] = new CaseClassGen[Case] {}
-}
+object CaseClassGen
 
 trait CommonHelper {
-
-  def fromModel[Case]: CaseClassGen[Case] = CaseClassGen[Case]
 
   def fromShapeValue[Case](shapeValue: DecoderShapeValue[Case]): Directive1[Case] = {
     val sv = shapeValue

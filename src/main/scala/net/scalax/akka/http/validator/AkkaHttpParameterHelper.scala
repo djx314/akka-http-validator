@@ -8,6 +8,7 @@ import akka.http.scaladsl.unmarshalling._
 import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ DecoderShape, ErrorMessage }
 import net.scalax.akka.http.validator.helper.{ CommonHelper, HListDecoderImplicit, ParameterHelper, ParameterModel }
+import shapeless.Witness
 
 trait TotalHelper extends ParameterHelper with CommonHelper
 
@@ -17,7 +18,7 @@ trait AkkaHttpParameterHelper extends HListDecoderImplicit {
 
   val helper: TotalHelper = TotalHelper
 
-  implicit def akkahttpParameterDValidatedShapeImplicit[T]: DecoderShape.Aux[ParameterModel.DValidated[T], T, ParameterModel.DValidated[T]] = new DecoderShape[ParameterModel.DValidated[T], T] {
+  implicit def akkahttpParameterDValidatedShapeImplicit[K, T]: DecoderShape.Aux[ParameterModel.DValidated[T], T, ParameterModel.DValidated[T]] = new DecoderShape[ParameterModel.DValidated[T], T] {
     override type Target = ParameterModel.DValidated[T]
     override def wrapRep(baseRep: ParameterModel.DValidated[T]): ParameterModel.DValidated[T] = baseRep
     override def toDirective(targetRep: ParameterModel.DValidated[T]): Directive1[Validated[ErrorMessage, T]] = targetRep.directive
