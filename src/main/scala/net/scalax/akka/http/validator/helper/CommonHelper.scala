@@ -1,9 +1,10 @@
 package net.scalax.akka.http.validator.helper
 
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.{ Directive, Directive1, Route }
 import cats.data.Validated
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import net.scalax.akka.http.validator.core.{ DecoderShape, DecoderShapeValue, ErrorMessage }
 import shapeless.Generic
 
@@ -34,6 +35,19 @@ object CaseClassGen
 
 trait CommonHelper {
 
+  import FailFastCirceSupport._
+  import io.circe.syntax._
+
+  def parallelValidate[A, B, C](v1: Validated[ErrorMessage, A], v2: Validated[ErrorMessage, B])(f: (A, B) => C): Validated[ErrorMessage, C] = {
+
+    (v1, v2) match {
+      case (Validated.Valid(a), Validated.Valid(b)) => Validated.Valid(f(a, b))
+      case (Validated.Valid(_), i @ Validated.Invalid(_)) => i
+      case (i @ Validated.Invalid(_), Validated.Valid(_)) => i
+      case (Validated.Invalid(e1), Validated.Invalid(e2)) => Validated.Invalid(e1 ++: e2)
+    }
+  }
+
   def fromShapeValue[Case](shapeValue: DecoderShapeValue[Case]): Directive1[Case] = {
     val sv = shapeValue
     val d1 = sv.shape.toDirective(sv.rep)
@@ -45,7 +59,7 @@ trait CommonHelper {
       case Validated.Valid(d) =>
         Directive { (s: Tuple1[Case] => Route) => s(Tuple1(d)) }
       case Validated.Invalid(message) =>
-        complete(HttpResponse(StatusCodes.BadRequest, entity = message.toString)): Directive1[Case]
+        complete((StatusCodes.BadRequest, message.asJson)): Directive1[Case]
     }
   }
 
