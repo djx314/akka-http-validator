@@ -71,25 +71,20 @@ class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteT
     "return a bad response for post large age" in {
       Post("/ping?id=id1&account=account1", FormData(("age", "34349727"), ("name", "myName1"), ("num", "23484"))) ~> Route.seal(smallRoute) ~> check {
         status shouldEqual StatusCodes.BadRequest
+
         io.circe.parser.parse(responseAs[String]).right.get shouldEqual
-          (ErrorPath.empty.resolve("age").toMessage("年龄不可以大于 34346345 岁") ++:
-            ErrorPath.empty.resolve("name.prefix").toMessage("名字必须以 name 开头")).asJson
+          io.circe.parser.parse(
+            """
+              {
+                "age": ["年龄不可以大于 34346345 岁"] ,
+                "name.prefix": ["名字必须以 name 开头"]
+              }
+            """.stripMargin).right.get
+
+        (ErrorPath.empty.resolve("age").toMessage("年龄不可以大于 34346345 岁") ++:
+          ErrorPath.empty.resolve("name.prefix").toMessage("名字必须以 name 开头")).asJson
       }
     }
 
-    /*"leave GET requests to other paths unhandled" in {
-      // tests:
-      Get("/kermit") ~> smallRoute ~> check {
-        handled shouldBe false
-      }
-    }
-
-    "return a MethodNotAllowed error for PUT requests to the root path" in {
-      // tests:
-      Put() ~> Route.seal(smallRoute) ~> check {
-        status shouldEqual StatusCodes.MethodNotAllowed
-        responseAs[String] shouldEqual "HTTP method not allowed, supported methods: GET"
-      }
-    }*/
   }
 }
