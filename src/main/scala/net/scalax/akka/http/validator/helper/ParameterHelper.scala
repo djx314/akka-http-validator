@@ -2,9 +2,8 @@ package net.scalax.akka.http.validator.helper
 
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.directives.FormFieldDirectives.{ FieldDef, FieldMagnet }
-import akka.http.scaladsl.server.directives.ParameterDirectives.{ ParamDef, ParamMagnet }
-import akka.http.scaladsl.unmarshalling.{ FromStrictFormFieldUnmarshaller, FromStringUnmarshaller }
+import akka.http.scaladsl.server.directives.FormFieldDirectives.FieldMagnet
+import akka.http.scaladsl.server.directives.ParameterDirectives.ParamMagnet
 import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ ErrorMessage, SingleMessage, SingleMessageImpl }
 
@@ -78,7 +77,20 @@ object ParameterModel {
 
 trait ParameterHelper {
 
-  def parameter[T](name: String)(implicit fsu: FromStringUnmarshaller[T]): ParameterModel.DValidated[T] = {
+  type ParamMagnetAux[U] = ParamMagnet { type Out = U }
+  type FieldMagnetAux[U] = FieldMagnet { type Out = U }
+
+  def parameter[T](name: String, pdm: ParamMagnetAux[Directive1[T]]): ParameterModel.DValidated[T] = {
+    val d1 = akka.http.scaladsl.server.Directives.parameter(pdm)
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
+  def formField[T](name: String, pdm: FieldMagnetAux[Directive1[T]]): ParameterModel.DValidated[T] = {
+    val d1 = akka.http.scaladsl.server.Directives.formField(pdm)
+    ParameterModel.dValidatedExtend(name, d1)
+  }
+
+  /*def parameter[T](name: String)(implicit fsu: FromStringUnmarshaller[T]): ParameterModel.DValidated[T] = {
     val d1 = akka.http.scaladsl.server.Directives.parameter(ParamMagnet(name.as[T])(ParamDef.forNR(fsu)))
     ParameterModel.dValidatedExtend(name, d1)
   }
@@ -96,7 +108,7 @@ trait ParameterHelper {
   def formFieldOpt[T](name: String)(implicit fsu: FieldDef.FSFFOU[T]): ParameterModel.DValidated[Option[T]] = {
     val d1 = akka.http.scaladsl.server.Directives.formField(FieldMagnet(name.as[T].?)(FieldDef.forNOR(fsu)))
     ParameterModel.dValidatedExtend(name, d1)
-  }
+  }*/
 
   def param(name: String): ParameterModel.ParameterPlaceHolder = ParameterModel.ParameterPlaceHolder(name)
   def form(name: String): ParameterModel.FormFieldPlaceHolder = ParameterModel.FormFieldPlaceHolder(name)
