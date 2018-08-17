@@ -9,12 +9,8 @@ import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ DecoderShape, ErrorMessage }
 import net.scalax.akka.http.validator.helper.{ CommonHelper, HListDecoderImplicit, ParameterHelper, ParameterModel }
 
-import scala.language.implicitConversions
+trait TotalHelper extends ParameterHelper with CommonHelper
 
-trait TotalHelper extends ParameterHelper with CommonHelper {
-  def fromTable[Case](provenShape: DecoderProvenShape[Case]): Directive1[Case] = fromShapeValue(provenShape.sv)
-
-}
 object TotalHelper extends TotalHelper
 
 trait AkkaHttpParameterHelper extends HListDecoderImplicit {

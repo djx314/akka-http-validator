@@ -3,13 +3,16 @@ package net.scalax.akka.http.validator
 import akka.http.scaladsl.server._
 import cats.data.Validated
 import net.scalax.akka.http.validator.core.{ DecoderShape, DecoderShapeValue, ErrorMessage }
-import net.scalax.akka.http.validator.helper.CaseClassGen
+import net.scalax.akka.http.validator.helper.{ CaseClassGen, CommonHelper }
 
 trait DecoderProvenShape[Data] {
+  self =>
 
   val fromRep: CaseClassGen[Data] = CaseClassGen[Data]
 
   def sv: DecoderShapeValue[Data]
+
+  def toDirective1: Directive1[Data] = CommonHelper.fromShapeValue(self.sv)
 
 }
 
