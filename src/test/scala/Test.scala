@@ -27,7 +27,7 @@ object CommonRoute extends AkkaHttpParameterHelper with FailFastCirceSupport {
       if (g > 34346345)
         Validated.invalid(path.resolve("age").toMessage("年龄不可以大于 34346345 岁"))
       else
-        Validated.valid(g)
+        Validated.valid(g + 10000000)
     }
 
     val name = helper.formField("name").validate { g =>
@@ -64,7 +64,7 @@ class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteT
     "return a ok reponse when send post method" in {
       Post("/ping?id=id1&account=account1", FormData(("age", "34346345"), ("name", "name1"), ("num", "23484"))) ~> Route.seal(smallRoute) ~> check {
         status shouldEqual StatusCodes.OK
-        io.circe.parser.parse(responseAs[String]).right.get shouldEqual RequestModel1(id = "id1", age = 34346345, name = "name1", account = "account1", num = 23484).asJson
+        io.circe.parser.parse(responseAs[String]).right.get shouldEqual RequestModel1(id = "id1", age = 44346345, name = "name1", account = "account1", num = 23484).asJson
       }
     }
 
