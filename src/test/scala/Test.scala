@@ -81,7 +81,7 @@ class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteT
               }
             """.stripMargin).right.get
 
-        (ErrorPath.empty.resolve("age").toMessage("年龄不可以大于 34346345 岁") ++:
+        io.circe.parser.parse(responseAs[String]).right.get shouldEqual (ErrorPath.empty.resolve("age").toMessage("年龄不可以大于 34346345 岁") ++:
           ErrorPath.empty.resolve("name.prefix").toMessage("名字必须以 name 开头")).asJson
       }
     }
