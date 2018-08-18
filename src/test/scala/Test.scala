@@ -76,7 +76,7 @@ class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteT
           io.circe.parser.parse(
             """
               {
-                "age": ["年龄不可以大于 34346345 岁"] ,
+                "age": ["年龄不可以大于 34346345 岁"],
                 "name.prefix": ["名字必须以 name 开头"]
               }
             """.stripMargin).right.get
